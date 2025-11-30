@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: spring-ai-chat
+
+  ai:
+    openai:
+      api-key:
+      chat:
+        options:
+          model: "qwen3-max"
+      base-url: "https://dashscope.aliyuncs.com/compatible-mode"
+
+logging:
+  level:
+    org:
+      springframework:
+        ai:
+          chat:
+            client:
+              advisor: debug
