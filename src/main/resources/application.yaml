@@ -2,13 +2,35 @@ spring:
   application:
     name: spring-ai-chat
 
+  datasource:
+    url: jdbc:postgresql://localhost:5432/chat?useSSL=false
+    username: postgres
+    password: 123456
+    driver-class-name: org.postgresql.Driver
   ai:
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: always
     openai:
-      api-key:
+      api-key: #Your api key
       chat:
         options:
           model: "qwen3-max"
+      embedding:
+        options:
+          model: "text-embedding-v2"
+          dimensions: 1536
+
       base-url: "https://dashscope.aliyuncs.com/compatible-mode"
+    vectorstore:
+      pgvector:
+        index-type: hnsw
+        distance-type: cosine_distance
+        dimensions: 1536
+        max-document-batch-size: 10000
+        initialize-schema: true
 
 logging:
   level:

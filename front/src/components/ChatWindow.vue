@@ -1,17 +1,25 @@
 <template>
   <div class="chat-container">
-    <div class="chat-header">
-      <h1>Spring AI Chat</h1>
-      <button @click="createNewConversation" class="new-conversation-btn" :disabled="isStreaming">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        新建对话
-      </button>
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <button @click="createNewConversation" class="new-conversation-btn" :disabled="isStreaming">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          新建对话
+        </button>
+      </div>
     </div>
     
-    <div class="chat-messages" ref="messagesContainer">
+    <!-- 主聊天区域 -->
+    <div class="chat-main">
+      <div class="chat-header">
+        <h1>Spring AI Chat</h1>
+      </div>
+      
+      <div class="chat-messages" ref="messagesContainer">
       <div 
         v-for="(message, index) in messages" 
         :key="index"
@@ -52,15 +60,6 @@
           </svg>
         </button>
       </div>
-      <div class="mode-selector">
-        <label>
-          <input type="radio" v-model="useStream" :value="true" :disabled="isStreaming" />
-          流式响应
-        </label>
-        <label>
-          <input type="radio" v-model="useStream" :value="false" :disabled="isStreaming" />
-          普通响应
-        </label>
       </div>
     </div>
   </div>
@@ -96,7 +95,6 @@ const messages = ref([])
 const userInput = ref('')
 const isStreaming = ref(false)
 const streamingContent = ref('')
-const useStream = ref(true)
 const messagesContainer = ref(null)
 const conversationId = ref(null)
 
@@ -180,48 +178,11 @@ const handleSend = async () => {
   userInput.value = ''
   await scrollToBottom()
   
-  if (useStream.value) {
-    await handleStreamResponse(input)
-  } else {
-    await handleNormalResponse(input)
-  }
+  await handleStreamResponse(input)
 }
 
 const handleNewLine = () => {
   // Shift+Enter 换行，不做任何处理
-}
-
-const handleNormalResponse = async (input) => {
-  try {
-    isStreaming.value = true
-    
-    // 获取或创建对话 ID
-    const currentConversationId = getOrCreateConversationId()
-    
-    const params = { 
-      input,
-      conversation_id: currentConversationId
-    }
-    
-    const response = await axios.get(`${API_BASE_URL}/api/chat`, {
-      params
-    })
-    
-    messages.value.push({
-      type: 'assistant',
-      content: response.data
-    })
-    
-    await scrollToBottom()
-  } catch (error) {
-    console.error('Error:', error)
-    messages.value.push({
-      type: 'assistant',
-      content: '抱歉，发生了错误：' + (error.message || '未知错误')
-    })
-  } finally {
-    isStreaming.value = false
-  }
 }
 
 const handleStreamResponse = async (input) => {
@@ -292,10 +253,34 @@ watch(messages, () => {
   border-radius: 20px;
   box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   width: 100%;
   height: calc(100vh - 40px);
   max-height: none;
+  overflow: hidden;
+}
+
+/* 侧边栏样式 */
+.sidebar {
+  width: 280px;
+  background: #f8f9fa;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  padding: 20px;
+  background: white;
+}
+
+/* 主聊天区域 */
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   overflow: hidden;
 }
 
@@ -304,7 +289,7 @@ watch(messages, () => {
   color: white;
   padding: 24px 32px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   flex-shrink: 0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -320,26 +305,29 @@ watch(messages, () => {
 .new-conversation-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 10px;
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
   color: white;
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .new-conversation-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .new-conversation-btn:active:not(:disabled) {
   transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .new-conversation-btn:disabled {
@@ -872,31 +860,6 @@ watch(messages, () => {
   cursor: not-allowed;
 }
 
-.mode-selector {
-  display: flex;
-  gap: 20px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.mode-selector label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  color: #666;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.mode-selector input[type="radio"] {
-  cursor: pointer;
-}
-
-.mode-selector input[type="radio"]:disabled {
-  cursor: not-allowed;
-}
 
 /* 滚动条样式 */
 .chat-messages::-webkit-scrollbar {
