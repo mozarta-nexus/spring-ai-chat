@@ -40,12 +40,10 @@ front/yarn-debug.log*
 front/yarn-error.log*
 front/pnpm-debug.log*
 front/lerna-debug.log*
-front/
 front/node_modules
 front/dist
 front/dist-ssr
 front/*.local
-front/
 front/# Editor directories and files
 front/.vscode/*
 front/!.vscode/extensions.json
